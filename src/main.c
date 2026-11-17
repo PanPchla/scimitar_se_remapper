@@ -68,6 +68,12 @@ int get_keypad_fd() {
 }
 
 int main() {
+    // what are the odds there's no input devices attached?
+    if (access("/dev/input/event0", R_OK | W_OK)) {
+        fputs("permission error, are you root?\n", stderr);
+        return -1;
+    }
+
     int fd = get_keypad_fd();
 
     if (fd == -1) {
@@ -116,6 +122,7 @@ int main() {
 
     libevdev_uinput_destroy(uidev);
     free(event);
+    libevdev_grab(dev, LIBEVDEV_UNGRAB);
     libevdev_free(dev);
 
     return 0;
