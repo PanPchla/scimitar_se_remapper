@@ -1,5 +1,5 @@
 # scimitar_se_remapper
-A tiny daemon which translates the default '1' to '=' keys on the side keypad to any other key. Currently remaps the keys to F13-F24 but a config file is in the works.
+A tiny daemon which translates the default 1-12 keys (which print out '1' to '=') on the side keypad to any other key.
 
 ## Usage
 The daemon needs to be run as root as it accesses the /dev/input files. It takes no arguments.
@@ -15,8 +15,11 @@ Example:
 4=KEY_1
 7=KEY_2
 8=KEY_Q
+9=KEY_MACRO1
 ```
 Any skipped keys will be passed through as normal.
+
+I found that KEY_MACRO1 through KEY_MACRO30 keys are nice if you want unique keys, as some in the KEY_F13-KEY_F25 range are bound to media keys on my system.
 
 ## Todo
 - Config file with keybinds
