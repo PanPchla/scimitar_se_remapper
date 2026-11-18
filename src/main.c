@@ -12,11 +12,16 @@
 #include <libevdev/libevdev.h>
 #include <libevdev/libevdev-uinput.h>
 
+#include "binds.h"
+#include "path.h"
 
 // Input device ID: bus 0x3 vendor 0x1b1c product 0x2b00 version 0x111
 #define SCIMITAR_WIRELESS_VENDOR 0x1b1c
 #define SCIMITAR_WIRELESS_PRODUCT 0x2b00
 #define SCIMITAR_WIRELESS_VERSION 0x111
+
+char* config_path;
+int* BINDS;
 
 int match_device(char* file_path) {
     int ret = 0;
@@ -73,6 +78,14 @@ int main() {
         fputs("permission error, are you root?\n", stderr);
         return -1;
     }
+    
+    config_path = get_config_filepath();
+
+    if (access(config_path, R_OK)) {
+        fprintf(stderr, "failed to read config file (looked at %s)\n", config_path);
+        return -1;
+    }
+    BINDS = load_binds(config_path);
 
     int fd = get_keypad_fd();
 
@@ -89,8 +102,12 @@ int main() {
     struct libevdev* template = libevdev_new();
     libevdev_set_name(template, "Scimitar Keypad Remapped");
 
-    for (int i = 0; i <= 12; i++) {
-        libevdev_enable_event_code(template, EV_KEY, KEY_F14 + i, NULL);
+    for (int i = 0; i < 12; i++) {
+        if (BINDS[i] != 0) {
+            libevdev_enable_event_code(template, EV_KEY, BINDS[i], NULL);
+        } else {
+            libevdev_enable_event_code(template, EV_KEY, i + 2, NULL);
+        }
     }
 
 
@@ -102,24 +119,25 @@ int main() {
 
     libevdev_free(template);
 
+
+    // main loop
     struct input_event* event = malloc(sizeof(struct input_event));
     while (1) {
         libevdev_next_event(dev, LIBEVDEV_READ_FLAG_BLOCKING, event);
 
-        // switch (event->code) {
-        //     case KEY_1:
-        //         libevdev_uinput_write_event(uidev, EV_KEY, KEY_F14, event->value);
-        //         break;
-        //     case KEY_2:
-        //         libevdev_uinput_write_event(uidev, EV_KEY, KEY_F15, event->value);
-        //         break;
-        // }
-        if (event->type == EV_KEY) {
-            libevdev_uinput_write_event(uidev, EV_KEY, event->code + 182, event->value);
+        if (event->type == EV_KEY && BINDS[event->code - 2] == 0) {
+            libevdev_uinput_write_event(uidev, EV_KEY, event->code, event->value);
+        } else if (event->type == EV_KEY) {
+            libevdev_uinput_write_event(uidev, EV_KEY, BINDS[event->code - 2], event->value);
         }
         libevdev_uinput_write_event(uidev, EV_SYN, SYN_REPORT, 1);
     }
 
+
+
+    // cleanup
+    free(config_path);
+    free(BINDS);
     libevdev_uinput_destroy(uidev);
     free(event);
     libevdev_grab(dev, LIBEVDEV_UNGRAB);
