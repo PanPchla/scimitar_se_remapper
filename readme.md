@@ -4,6 +4,20 @@ A tiny daemon which translates the default '1' to '=' keys on the side keypad to
 ## Usage
 The daemon needs to be run as root as it accesses the /dev/input files. It takes no arguments.
 
+## Config
+The config file should be at $XDG_CONFIG_HOME/scimitar_se_remapper/binds.conf (this should be /home/username/.config/scimitar_se_remapper/binds.conf by default).
+The format consits of key value pairs with the key being the key number on the keypad itself. The value should be a keycode as defined in [linux/input-event-codes.h](https://github.com/torvalds/linux/blob/master/include/uapi/linux/input-event-codes.h)
+
+Example:
+```
+1=KEY_F14
+2=KEY_F15
+4=KEY_1
+7=KEY_2
+8=KEY_Q
+```
+Any skipped keys will be passed through as normal.
+
 ## Todo
 - Config file with keybinds
 - Better robustness (currently breaks if the mouse is unplugged while the daemon is active)
