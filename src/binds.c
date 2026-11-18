@@ -38,6 +38,8 @@ int* load_binds(char* path) {
     char str[50] = {0};
     while (fgets(str, sizeof(str), conf_file)) {
         strip_space(str);
+        if (!strcmp(str, "")) continue;
+
         char* token1 = strtok(str, "=");
         char* token2 = strtok(NULL, "=");
         // printf("%d\n", convert_to_code(token2));

@@ -19,8 +19,6 @@ Example:
 ```
 Any skipped keys will be passed through as normal.
 
-I found that KEY_MACRO1 through KEY_MACRO30 keys are nice if you want unique keys, as some in the KEY_F13-KEY_F25 range are bound to media keys on my system.
-
 ## Todo
 - Config file with keybinds
 - Better robustness (currently breaks if the mouse is unplugged while the daemon is active)
